@@ -1,15 +1,18 @@
-package chatting.server.chatroom;
+package chatting.chatroom.server;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 
 public class ChatRoomServer {
 	
 	// ¹æ ¸ñ·Ï
-	static List<ChatRoom> rooms = new ArrayList<>();
+	static Map<Integer, ChatRoom> rooms = new Hashtable<Integer, ChatRoom>();
+//	static List<ChatRoom> rooms = new ArrayList<>();
 	
 	static ServerSocket serverSock;
 	

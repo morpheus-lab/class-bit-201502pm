@@ -1,4 +1,4 @@
-package chatting.server.chatroom;
+package chatting.chatroom.server;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -6,11 +6,21 @@ import java.util.List;
 
 public class ChatRoom {
 	
+	static int r = 1;
+	
 	// 이 방에 입장한 클라이언트 목록
 	private List<ChatClientThread> clientsInThisRoom = new ArrayList<>();
 	
 	// 방장
 	ChatClientThread boss;
+	
+	// 방번호
+	Integer roomNum = r++;	// 처음 생성되는 ChatRoom 객체는 roomNum = 1
+							// 두 번째 생성되는 ChatRoom 객체는 roomNum = 2
+							// 세 번째 생성되는 ChatRoom 객체는 roomNum = 3
+	
+	// 방제목
+	String title;
 	
 	public ChatRoom(ChatClientThread boss) {
 		this.boss = boss;
