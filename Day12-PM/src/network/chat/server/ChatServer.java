@@ -31,8 +31,12 @@ public class ChatServer {
 		// 이 스레드가 담당하고 있는 클라이언트에 메시지 송신
 		public void sendMessage(String msg, ChatThread sender) throws IOException {
 			if (writer != null) {
-				String senderNick = (sender == this) ? "나" : sender.nick;
-				writer.write(senderNick + "> " + msg + "\n");
+				if (sender == null) {
+					writer.write("<<<" + msg + ">>>\n");
+				} else {
+					String senderNick = (sender == this) ? "나" : sender.nick;
+					writer.write(senderNick + "> " + msg + "\n");
+				}
 				writer.flush();
 			}
 		}
@@ -40,7 +44,35 @@ public class ChatServer {
 		@Override
 		public void run() {
 			try {
-				nick = reader.readLine();	// 최초 수신 메시지 => 대화명
+				
+				while (true) {
+					String nick = reader.readLine();	// 최초 수신 메시지 => 대화명
+					// 중복 체크
+					if (isAvailableNick(nick)) {
+						this.nick = nick;
+						// 사용 가능 대화명이라면 "OK" 문자열 전송
+						sendMessage("OK", null);	// "<<<OK>>>"
+						break;
+					} else {
+						// 가능 하지 않다면 "NOT_OK" 문자열 전송
+						sendMessage("NOT_OK", null);
+						// 다시 대화명 수신하도록
+					}
+				}
+				
+				// 이 클라이언트의 nick을 알 수 있는 최초 지점
+				// 모든 클라이언트에게 xxx가 접속했습니다. 메시지 송신
+				synchronized (clients) {
+					// 모든 클라이언트에 메시지 송신
+					Iterator<ChatThread> iter = clients.iterator();
+					while (iter.hasNext()) {
+						ChatThread t = iter.next();
+						if (t == this) {	// 본인에게는 접속 메시지 알리지 않음
+							continue;
+						}
+						t.sendMessage(nick + "님이 접속하였습니다.", null);
+					}
+				}
 				
 				while (true) {
 					// 클라이언트가 보낸 메시지 수신
@@ -85,7 +117,20 @@ public class ChatServer {
 		}
 		
 	}
-
+	
+	// 중복 대화명 체크
+	static boolean isAvailableNick(String nick) {
+		synchronized (clients) {
+			Iterator<ChatThread> iter = clients.iterator();
+			while (iter.hasNext()) {
+				if (nick.equals(iter.next().nick)) {
+					return false;
+				}
+			}
+			return true;
+		}
+	}
+	
 	// 접속된 클라이언트 목록
 	static List<ChatThread> clients = new ArrayList<ChatThread>();
 	
